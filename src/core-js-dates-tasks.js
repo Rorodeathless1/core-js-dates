@@ -270,8 +270,17 @@ function getNextFridayThe13th(date) {
  * Date(2024, 5, 1) => 2
  * Date(2024, 10, 10) => 4
  */
-function getQuarter(/* date */) {
-  throw new Error('Not implemented');
+function getQuarter(date) {
+  if (date.getMonth() < 3) {
+    return 1;
+  }
+  if (date.getMonth() < 6) {
+    return 2;
+  }
+  if (date.getMonth() < 9) {
+    return 3;
+  }
+  return 4;
 }
 
 /**
@@ -292,8 +301,39 @@ function getQuarter(/* date */) {
  * { start: '01-01-2024', end: '15-01-2024' }, 1, 3 => ['01-01-2024', '05-01-2024', '09-01-2024', '13-01-2024']
  * { start: '01-01-2024', end: '10-01-2024' }, 1, 1 => ['01-01-2024', '03-01-2024', '05-01-2024', '07-01-2024', '09-01-2024']
  */
-function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
-  throw new Error('Not implemented');
+function getWorkSchedule(period, countWorkDays, countOffDays) {
+  function parseDateDDMMYYYY(dateString) {
+    const parts = dateString.split('-');
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+  }
+  const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+  const startDate = parseDateDDMMYYYY(period.start);
+  const endDate = parseDateDDMMYYYY(period.end);
+
+  const baseDate = new Date(2024, 0, 1);
+
+  const cycleLength = countWorkDays + countOffDays;
+  const workSchedule = [];
+
+  const currentDate = new Date(startDate);
+
+  while (currentDate.valueOf() <= endDate.valueOf()) {
+    const timeDiff = currentDate.valueOf() - baseDate.valueOf();
+
+    const dayDifference = Math.floor(timeDiff / MS_PER_DAY);
+
+    if (dayDifference % cycleLength < countWorkDays) {
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const year = currentDate.getFullYear();
+
+      workSchedule.push(`${day}-${month}-${year}`);
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return workSchedule;
 }
 
 /**
